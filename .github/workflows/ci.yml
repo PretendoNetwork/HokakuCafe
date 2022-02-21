@@ -1,0 +1,27 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build-binary:
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Build HBL binary
+      run: |
+        docker build . -t builder
+        docker run --rm -v ${PWD}:/project builder make
+    - uses: actions/upload-artifact@v2
+      with:
+       name: HokakuCafe_hbl
+       path: "*.rpx"
+    - name: Build Tiramisu binary
+      run: |
+        docker run --rm -v ${PWD}:/project builder make clean
+        docker run --rm -v ${PWD}:/project builder make TIRAMISU=1
+    - uses: actions/upload-artifact@v2
+      with:
+       name: HokakuCafe_tiramisu
+       path: "*.rpx"
