@@ -2,6 +2,8 @@
 Applies IOSU patches to write all `PRUDP` network frames to a `.pcap` file. Also dumps NEX account tokens, which are needed for packet decryption.  
 All files will be in the `HokakuCafe` folder on the root of your SD Card.  
 
+The filename for the token will contain the Principal and Game ID: `nexServiceToken-<pid>-<gameid>.bin`.  
+
 ## Usage
 ### Homebrew Launcher
 1. Copy the `HokakuCafe.rpx` to the `wiiu/apps` folder

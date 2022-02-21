@@ -45,11 +45,14 @@ typedef struct {
     uint32_t unalignedAfterSize;
 } ManagedBuffer_t;
 
-int acquireNexServiceToken(uint8_t param_1, ManagedBuffer_t* buffer, uint32_t gameId, uint8_t parentalControls);
+#define INFO_TYPE_PRINCIPAL_ID 0xc
 
-int acquireNexServiceTokenHook(uint8_t param_1, ManagedBuffer_t* buffer, uint32_t gameId, uint8_t parentalControls)
+int getAccountInfo(uint8_t slotNo, ManagedBuffer_t* buffer, int type);
+int acquireNexServiceToken(uint8_t slotNo, ManagedBuffer_t* buffer, uint32_t gameId, uint8_t parentalControls);
+
+int acquireNexServiceTokenHook(uint8_t slotNo, ManagedBuffer_t* buffer, uint32_t gameId, uint8_t parentalControls)
 {
-    int result = acquireNexServiceToken(param_1, buffer, gameId, parentalControls);
+    int result = acquireNexServiceToken(slotNo, buffer, gameId, parentalControls);
     if (result == 0) {
         uint32_t size = buffer->unalignedBeforeSize + buffer->alignedSize + buffer->unalignedAfterSize;
         void* data = IOS_AllocAligned(IOS_HEAP_SHARED, size, 0x40);
@@ -67,8 +70,15 @@ int acquireNexServiceTokenHook(uint8_t param_1, ManagedBuffer_t* buffer, uint32_
         memcpy(writePtr, buffer->unalignedAfterBuffer, buffer->unalignedAfterSize);
         writePtr += buffer->unalignedAfterSize;
 
+        uint32_t pid = 0;
+        ManagedBuffer_t pidBuffer = { 0 };
+        pidBuffer.alignedBuffer = &pid;
+        pidBuffer.alignedSize = 4;
+
+        getAccountInfo(slotNo, &pidBuffer, INFO_TYPE_PRINCIPAL_ID);
+
         char name[512];
-        snprintf(name, sizeof(name), "/vol/storage_tokendump/HokakuCafe/nexServiceToken-%08lx.bin", gameId);
+        snprintf(name, sizeof(name), "/vol/storage_tokendump/HokakuCafe/nexServiceToken-%lu-%08lx.bin", pid, gameId);
 
         writeFileToSD(name, data, size);
 

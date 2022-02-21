@@ -14,3 +14,4 @@ PROVIDE(IOS_Ioctl = 0xe3166dd4);
 PROVIDE(IOS_Ioctlv = 0xe3166ddc);
 
 PROVIDE(acquireNexServiceToken = 0xe30c4404);
+PROVIDE(getAccountInfo = 0xe30bfd88);
