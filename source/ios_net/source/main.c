@@ -66,7 +66,7 @@ void writeData(void* data, uint32_t size)
     if (fileHandle < 0) {
         int res = FSA_Mount(fsaHandle, "/dev/sdcard01", "/vol/storage_framedump", 2, NULL, 0);
         if (res >= 0) {
-            FSA_MakeDir(fsaHandle, "/vol/storage_tokendump/HokakuCafe", 0x600);
+            FSA_MakeDir(fsaHandle, "/vol/storage_framedump/HokakuCafe", 0x600);
 
             CalendarTime_t ctime;
             IOS_GetAbsTimeCalendar(&ctime);
