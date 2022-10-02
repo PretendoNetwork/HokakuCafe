@@ -159,7 +159,10 @@ void queuePushHook(void* queue, Packet_t* packet)
     uint16_t ether_type = (data[12] << 8) | data[13];
     if (ether_type == ETHERTYPE_IPV4 &&
         data[23] == PROTO_UDP &&
-        data[42] == 0xea && data[43] == 0xd0) {
+        // PRUDPv1
+        ((data[42] == 0xea && data[43] == 0xd0) ||
+        // PRUDPv0 (Nintendo)
+        (data[42] == 0xa1 && data[43] == 0xaf))) {
         writeData(data, size);
     }
 
@@ -175,7 +178,10 @@ int sendFrameHook(InterfaceCtx_t* ctx, uint8_t* data, uint32_t size)
     uint16_t ether_type = (data[12] << 8) | data[13];
     if (ether_type == ETHERTYPE_IPV4 &&
         data[23] == PROTO_UDP &&
-        data[42] == 0xea && data[43] == 0xd0) {
+        // PRUDPv1
+        ((data[42] == 0xea && data[43] == 0xd0) ||
+        // PRUDPv0 (Nintendo)
+        (data[42] == 0xaf && data[43] == 0xa1))) {
         writeData(data, size);
     }
 
