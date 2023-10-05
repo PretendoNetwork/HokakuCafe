@@ -1,6 +1,7 @@
 #include "net.h"
 #include "imports.h"
 #include "../../common/interface.h"
+#include "../../common/config.h"
 #include "../../ios_net/ios_net_syms.h"
 
 void run_ios_net_patches(void)
@@ -24,6 +25,10 @@ void run_ios_net_patches(void)
     map_info.type = 3;              // 0 = undefined, 1 = kernel only, 2 = read only, 3 = read write
     map_info.cached = 0xFFFFFFFF;
     _iosMapSharedUserExecution(&map_info);
+
+    // Copy configuration to the end of the text section
+    Configuration_t *configuration = (Configuration_t *)0x00160000;
+    kernel_memcpy((void*)_text_end, configuration, sizeof(*configuration));
 
     // replace all sendFrame functions
     InterfaceCtx_t** ifaces = (InterfaceCtx_t**) 0x128090bc;

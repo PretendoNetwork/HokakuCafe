@@ -12,6 +12,7 @@ SECTIONS {
         *(.data*);
     }
     _text_end = .;
+    PROVIDE(_configuration = .);
 
     . = 0x1288e000;
 

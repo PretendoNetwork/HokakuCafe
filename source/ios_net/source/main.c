@@ -5,12 +5,13 @@
 #include "fsa.h"
 #include "utils.h"
 #include "../../common/interface.h"
+#include "../../common/config.h"
 
 #define ETHERTYPE_IPV4 0x0800
+#define PROTO_TCP 0x06
 #define PROTO_UDP 0x11
 
 #define LINKTYPE_ETHERNET 1
-#define MAX_PACKET_SIZE 0x800
 
 typedef struct pcap_hdr_s {
     uint32_t magic_number;   /* magic number */
@@ -29,10 +30,46 @@ typedef struct pcaprec_hdr_s {
     uint32_t orig_len;       /* actual length of packet */
 } pcaprec_hdr_t;
 
+extern Configuration_t _configuration;
+
 int semaphore = -1;
 int fileHandle = -1;
 void* writeBuffer = NULL;
 int fsaHandle = -1;
+
+int matchData(uint8_t *data)
+{
+    if (_configuration.mode == MODE_ALL) {
+        return 1;
+    }
+
+    uint16_t ether_type = (data[12] << 8) | data[13];
+    if (ether_type == ETHERTYPE_IPV4) {
+        if (_configuration.mode == MODE_IPV4) {
+            return 1;
+        }
+
+        if (data[23] == PROTO_TCP) {
+            if (_configuration.mode == MODE_TCP) {
+                return 1;
+            }
+        } else if (data[23] == PROTO_UDP) {
+            if (_configuration.mode == MODE_UDP) {
+                return 1;
+            }
+
+            if (_configuration.mode == MODE_PRUDP &&
+                // PRUDPv1
+                ((data[42] == 0xea && data[43] == 0xd0) ||
+                // PRUDPv0 (Nintendo)
+                (data[42] == 0xaf && data[43] == 0xa1))) {
+                return 1;
+            }
+        }
+    }
+
+    return 0;
+}
 
 void writeData(void* data, uint32_t size)
 {
@@ -55,7 +92,7 @@ void writeData(void* data, uint32_t size)
     }
 
     if (!writeBuffer) {
-        writeBuffer = IOS_AllocAligned(0xcaff, MAX_PACKET_SIZE + sizeof(pcaprec_hdr_t), 0x40);
+        writeBuffer = IOS_AllocAligned(0xcaff, _configuration.maxPacketSize + sizeof(pcaprec_hdr_t), 0x40);
         if (!writeBuffer) {
             printf("Failed to allocate write buffer\n");
             IOS_SignalSemaphore(semaphore);
@@ -88,7 +125,7 @@ void writeData(void* data, uint32_t size)
             hdr.magic_number = 0xa1b2c3d4;
             hdr.version_major = 2;
             hdr.version_minor = 4;
-            hdr.snaplen = MAX_PACKET_SIZE;
+            hdr.snaplen = _configuration.maxPacketSize;
             hdr.network = LINKTYPE_ETHERNET;
             memcpy(writeBuffer, &hdr, sizeof(hdr));
             
@@ -108,7 +145,7 @@ void writeData(void* data, uint32_t size)
     rec_hdr.ts_sec = time / 1000000;
     rec_hdr.ts_usec = time - (rec_hdr.ts_sec * 1000000);
     rec_hdr.orig_len = size;
-    rec_hdr.incl_len = (size >= MAX_PACKET_SIZE) ? MAX_PACKET_SIZE : size;
+    rec_hdr.incl_len = (size >= _configuration.maxPacketSize) ? _configuration.maxPacketSize : size;
 
     memcpy(writeBuffer, &rec_hdr, sizeof(rec_hdr));
     memcpy((uint8_t*) writeBuffer + sizeof(rec_hdr), data, rec_hdr.incl_len);
@@ -155,14 +192,7 @@ void queuePushHook(void* queue, Packet_t* packet)
     // packet_size doesn't include the size of the frame header
     uint32_t size = packet->packet_size + 0xe;
 
-    // Only write PRUDP packets to the pcap file
-    uint16_t ether_type = (data[12] << 8) | data[13];
-    if (ether_type == ETHERTYPE_IPV4 &&
-        data[23] == PROTO_UDP &&
-        // PRUDPv1
-        ((data[42] == 0xea && data[43] == 0xd0) ||
-        // PRUDPv0 (Nintendo)
-        (data[42] == 0xa1 && data[43] == 0xaf))) {
+    if (matchData(data)) {
         writeData(data, size);
     }
 
@@ -174,14 +204,8 @@ int __WlSendFrame(InterfaceCtx_t* ctx, uint8_t* data, uint32_t size);
 
 int sendFrameHook(InterfaceCtx_t* ctx, uint8_t* data, uint32_t size)
 {
-    // Only write PRUDP packets to the pcap file
-    uint16_t ether_type = (data[12] << 8) | data[13];
-    if (ether_type == ETHERTYPE_IPV4 &&
-        data[23] == PROTO_UDP &&
-        // PRUDPv1
-        ((data[42] == 0xea && data[43] == 0xd0) ||
-        // PRUDPv0 (Nintendo)
-        (data[42] == 0xaf && data[43] == 0xa1))) {
+    // Only write packets which match to the pcap file
+    if (matchData(data)) {
         writeData(data, size);
     }
 
