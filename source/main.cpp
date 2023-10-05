@@ -1,6 +1,6 @@
 #include "ios_exploit.h"
 
-#ifndef TIRAMISU
+#ifndef SETUP_MODULE
 #include <coreinit/foreground.h>
 #include <proc_ui/procui.h>
 #include <sysapp/launch.h>
@@ -8,7 +8,7 @@
 
 int main(int argc, char **argv)
 {
-#ifndef TIRAMISU
+#ifndef SETUP_MODULE
     // init procui
     ProcUIInit(&OSSavesDone_ReadyToRelease);
 #endif
@@ -16,7 +16,7 @@ int main(int argc, char **argv)
     // run the ios exploit
     ExecuteIOSExploit();
 
-#ifndef TIRAMISU
+#ifndef SETUP_MODULE
     // exit to the menu as soon as possible
     ProcUIStatus status;
     while ((status = ProcUIProcessMessages(TRUE)) != PROCUI_STATUS_EXITING) {

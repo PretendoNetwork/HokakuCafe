@@ -17,7 +17,7 @@ include $(DEVKITPRO)/wut/share/wut_rules
 # DATA is a list of directories containing data files
 # INCLUDES is a list of directories containing header files
 #-------------------------------------------------------------------------------
-ifeq ($(TIRAMISU), 1)
+ifeq ($(SETUP_MODULE), 1)
 TARGET		:=	30_hokaku_cafe
 else
 TARGET		:=	HokakuCafe
@@ -28,7 +28,7 @@ SOURCES		:=	source
 DATA		:=	data
 INCLUDES	:=	include
 
-ifeq ($(TIRAMISU), 1)
+ifeq ($(SETUP_MODULE), 1)
 SOURCES += source/crt
 endif
 
@@ -45,10 +45,10 @@ CXXFLAGS	:= $(CFLAGS)
 ASFLAGS	:=	$(ARCH)
 LDFLAGS	=	$(ARCH) $(RPXSPECS) -Wl,-Map,$(notdir $*.map)
 
-ifeq ($(TIRAMISU), 1)
+ifeq ($(SETUP_MODULE), 1)
 LDFLAGS += --entry=_start
-CFLAGS += -DTIRAMISU
-CXXFLAGS += -DTIRAMISU
+CFLAGS += -DSETUP_MODULE
+CXXFLAGS += -DSETUP_MODULE
 endif
 
 LIBS	:= -lwut

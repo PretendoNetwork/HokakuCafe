@@ -6,16 +6,17 @@ The filename for the token will contain the Principal and Game ID: `nexServiceTo
 
 ## Usage
 ### Homebrew Launcher
-1. Copy the `HokakuCafe.rpx` to the `wiiu/apps` folder
-2. Open the HBL and launch HokakuCafe
-3. Launch a game and the packets will be written to the SD
+1. Copy the `HokakuCafe.rpx` to the `wiiu/apps` folder.
+2. Open the HBL and launch HokakuCafe.
+3. Launch a game and the packets will be written to the SD.
 
-### Tiramisu
-1. Copy the `30_hokaku_cafe.rpx` to the `wiiu/environments/tiramisu/modules/setup` folder
+### Setup Module
+The setup module works with both Tiramisu and Aroma (`[ENVIRONMENT]` is a placeholder for the actual environment name).  
+1. Copy the `30_hokaku_cafe.rpx` to the `wiiu/environments/[ENVIRONMENT]/modules/setup` folder.
 2. Launch a game and the packets will be written to the SD
 
 Make sure to only remove the SD Card after powering off the system, to make sure all data has been written.
 
 ## Building
 Install devkitPPC, devkitARM and wut.  
-Run `make` (add `TIRAMISU=1` to build the tiramisu version).
+Run `make` (add `SETUP_MODULE=1` to build the setup module).

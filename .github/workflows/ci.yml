@@ -17,11 +17,11 @@ jobs:
       with:
        name: HokakuCafe_hbl
        path: "*.rpx"
-    - name: Build Tiramisu binary
+    - name: Build setup module
       run: |
         docker run --rm -v ${PWD}:/project builder make clean
-        docker run --rm -v ${PWD}:/project builder make TIRAMISU=1
+        docker run --rm -v ${PWD}:/project builder make SETUP_MODULE=1
     - uses: actions/upload-artifact@v2
       with:
-       name: HokakuCafe_tiramisu
+       name: HokakuCafe_setup_module
        path: "*.rpx"
