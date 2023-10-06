@@ -130,6 +130,7 @@ void writeData(void* data, uint32_t size)
             memcpy(writeBuffer, &hdr, sizeof(hdr));
             
             FSA_WriteFile(fsaHandle, writeBuffer, 1, sizeof(hdr), fileHandle, 0);
+            FSA_FlushFile(fsaHandle, fileHandle);
         }
         else {
             printf("Failed to mount sdcard\n");
@@ -153,6 +154,8 @@ void writeData(void* data, uint32_t size)
     if (FSA_WriteFile(fsaHandle, writeBuffer, 1, sizeof(rec_hdr) + rec_hdr.incl_len, fileHandle, 0) < 0) {
         FSA_CloseFile(fsaHandle, fileHandle);
         fileHandle = -1;
+    } else {
+        FSA_FlushFile(fsaHandle, fileHandle);
     }
 
     IOS_SignalSemaphore(semaphore);
