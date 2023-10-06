@@ -60,8 +60,12 @@ int main(int argc, char **argv)
     // create folder in case it doesn't exist
     mkdir("/vol/external01/HokakuCafe/", 0700);
 
-    // parse config file
     Configuration_t config;
+    config.enabled = 1;
+    config.mode = MODE_PRUDP;
+    config.maxPacketSize = 0x800;
+
+    // parse config file
     const char *configPath = "/vol/external01/HokakuCafe/config.ini";
     if (ini_parse(configPath, configHandler, &config) < 0) {
         // create default config
@@ -74,10 +78,6 @@ int main(int argc, char **argv)
                   "MaxPacketSize=0x800\n", f);
             fclose(f);
         }
-
-        config.enabled = 1;
-        config.mode = MODE_PRUDP;
-        config.maxPacketSize = 0x800;
     }
 
     if (config.enabled) {
